@@ -1,0 +1,296 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "daysInterval": 4,
+              "triggerAtHour": 23
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        0
+      ],
+      "id": "5945d9df-7c4d-4ab2-a8b4-6e2a740d47fd",
+      "name": "Schedule Trigger",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "resource": "thread",
+        "returnAll": true,
+        "filters": {
+          "labelIds": [
+            "LABEL_ID_REMOVED"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        208,
+        0
+      ],
+      "id": "4595034b-17b9-45da-a344-1767594ca913",
+      "name": "Get many threads",
+      "webhookId": "WEBHOOK_ID_REMOVED",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "CREDENTIAL_ID_REMOVED",
+          "name": "CREDENTIAL_NAME_REMOVED"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=You will receive an email thread snippet with an id.\n\nReturn ONLY a JSON object like this:\n{\"id\": \"<same id>\", \"ghosting_status\": \"GHOSTED\"}\n\nor\n{\"id\": \"<same id>\", \"ghosting_status\": \"NOT_GHOSTED\"}\n\nNo extra text, no explanation, no markdown.\nid: {{ $json.id }}\nsnippet: {{ $json.snippet }}\n"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        448,
+        0
+      ],
+      "id": "5fbf410b-f165-421f-9bba-def3b7916304",
+      "name": "Message a model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "CREDENTIAL_ID_REMOVED",
+          "name": "CREDENTIAL_NAME_REMOVED"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={{ $json.content.parts[0].text }}\n\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        800,
+        0
+      ],
+      "id": "0f66354e-4297-4fce-a376-f8666e6f8d39",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "b32a0ee7-9f7e-4af3-9608-0131f486b206",
+              "leftValue": "={{ $json.ghosting_status }}",
+              "rightValue": "GHOSTED",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1008,
+        0
+      ],
+      "id": "d4ce92b1-e690-49bb-8e39-26176fd7e79e",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "resource": "thread",
+        "operation": "removeLabels",
+        "threadId": "={{ $json.threadId }}",
+        "labelIds": [
+          "LABEL_ID_REMOVED"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1440,
+        -176
+      ],
+      "id": "6493974e-3d1d-4174-89f1-f979bdcfcf3a",
+      "name": "Remove label from thread",
+      "webhookId": "WEBHOOK_ID_REMOVED",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "CREDENTIAL_ID_REMOVED",
+          "name": "CREDENTIAL_NAME_REMOVED"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "thread",
+        "operation": "removeLabels",
+        "threadId": "={{ $json.id }}",
+        "labelIds": [
+          "LABEL_ID_REMOVED"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1456,
+        80
+      ],
+      "id": "34f82626-6735-4631-99a3-08bd5dbee261",
+      "name": "Remove label from thread1",
+      "webhookId": "WEBHOOK_ID_REMOVED",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "CREDENTIAL_ID_REMOVED",
+          "name": "CREDENTIAL_NAME_REMOVED"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "thread",
+        "operation": "reply",
+        "threadId": "={{ $json.id }}",
+        "messageId": "MESSAGE_ID_REMOVED",
+        "message": "Hey, just following up on this. Let me know when you get a chance.",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1200,
+        -128
+      ],
+      "id": "10b950eb-71d0-4a63-86f0-935c9de91919",
+      "name": "Reply to a message",
+      "webhookId": "WEBHOOK_ID_REMOVED",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "CREDENTIAL_ID_REMOVED",
+          "name": "CREDENTIAL_NAME_REMOVED"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get many threads",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many threads": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Reply to a message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Remove label from thread1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reply to a message": {
+      "main": [
+        [
+          {
+            "node": "Remove label from thread",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "ba96cf40-3431-47dd-bb8b-eac22339d5a0",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "INSTANCE_ID_REMOVED"
+  },
+  "id": "WORKFLOW_ID_REMOVED",
+  "tags": []
+}
