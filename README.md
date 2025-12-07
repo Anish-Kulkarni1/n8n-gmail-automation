@@ -5,7 +5,7 @@
 This article presents an automated method of sending follow-up emails or messages on threads in Gmail that do not yield a response. In this workflow, TRACKING_LABEL is a label in Gmail that helps in tracking conversations, and the AI model determines whether a thread has been ghosted. When a thread is found to be ghosted, a follow-up message is sent within the thread.
 
 ## Overview of Operations
-- A scheduled trigger starts the execution every four days.
+- A scheduled trigger starts the execution.
 - Gmail threads with the label TRACKING_LABEL are retrieved.
 - Evaluates every thread retrieved with an AI model.
 - The AI model identifies who sent the most recent message and labels it as one of two classes:
